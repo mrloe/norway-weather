@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Norway weather watch</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#fff; --ink:#15181d; --muted:#5b6470; --line:#dfe3e8; --head:#eef0f3;
+  --y:#ffd23f; --o:#ff8c1a; --r:#d62828; --ink-r:#fff;
+  --f1:#e9dcf7; --f2:#c79cf0; --accent:#1d5fd1;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#101318; --panel:#171b22; --ink:#e8ebf0; --muted:#98a2b0; --line:#2a313b; --head:#1e242d;
+        --f1:#3a2c52; --f2:#6b4a99; --accent:#6ea3ff}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 6px}
+h1{font-size:20px;margin:0}
+#stamp{color:var(--muted);font-size:13px;margin-top:2px}
+#banner .b{margin:8px 0 0;padding:8px 10px;border-radius:8px;font-size:13px}
+.b.demo{background:#7a1f1f;color:#fff;font-weight:600}
+.b.warn{background:#fff3cd;color:#4a3b00}
+@media (prefers-color-scheme: dark){.b.warn{background:#4a3b00;color:#ffe9a6}}
+.trust{margin:8px 0 0;border-radius:10px;padding:9px 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13.5px;border:1px solid var(--line);background:var(--panel)}
+.trust .dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px}
+.trust.t0 .dot{background:#2e9e4f}.trust.t1 .dot{background:#e0a800}.trust.t2 .dot{background:#d62828}
+.trust.t1{border-color:#e0a800}.trust.t2{border-color:#d62828;background:#fdecec;color:#6b0f0f}
+.trust a{color:var(--accent);cursor:pointer;margin-left:auto;text-decoration:underline}
+.trust.t2 a{color:#8a1111}
+#tdetail{margin:6px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:13px}
+#tdetail table{width:auto;border-collapse:collapse}
+#tdetail td{padding:2px 16px 2px 0;border:0;vertical-align:top}
+#tdetail td:first-child{color:var(--muted);white-space:nowrap}
+#tdetail p{margin:8px 0 0;color:var(--muted)}
+.matrixWrap.stale{opacity:.5;filter:grayscale(.7)}
+@media (prefers-color-scheme: dark){.trust.t2{background:#3a1515;color:#ffd0d0}.trust.t2 a{color:#ffb3b3}}
+main{padding:0 16px 40px;max-width:1400px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;gap:4px;align-items:center;padding:2px 8px;border-radius:999px;font-weight:600;font-size:13px}
+.pill.l1{background:var(--y);color:#000}.pill.l2{background:var(--o);color:#000}.pill.l3{background:var(--r);color:var(--ink-r)}
+.pill.zero{background:var(--head);color:var(--muted);font-weight:500}
+.card .sub{margin-top:6px;font-size:12px;color:var(--muted)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.controls input[type=search],.controls select{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--ink);cursor:pointer;font:inherit}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+label.chk{display:flex;gap:6px;align-items:center;color:var(--muted)}
+.matrixWrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel);max-height:78vh}
+table{border-collapse:separate;border-spacing:0;width:100%}
+th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0}
+thead th{position:sticky;top:0;z-index:3;background:var(--head);padding:6px 4px;font-size:12px;text-align:center;min-width:104px}
+thead th.today{box-shadow:inset 0 -3px 0 var(--accent)}
+thead th:first-child,tbody th{position:sticky;left:0;z-index:2;background:var(--head);text-align:left;min-width:132px;padding:6px 8px}
+thead th:first-child{z-index:4}
+tbody th{font-weight:600;font-size:13px}
+tbody th small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+tr.reg td{background:var(--head);font-weight:700;font-size:12px;padding:5px 8px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+td.cell{cursor:pointer;vertical-align:top;padding:5px 6px;min-width:104px;height:48px;font-size:12px}
+td.cell:hover{outline:2px solid var(--accent);outline-offset:-2px}
+td.cell .top{font-weight:700;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+td.cell .nums{color:inherit;opacity:.85;white-space:nowrap}
+td.l1{background:var(--y);color:#000}td.l2{background:var(--o);color:#000}td.l3{background:var(--r);color:var(--ink-r)}
+td.f1{background:var(--f1)}td.f2{background:var(--f2)}
+td.na{color:var(--muted);text-align:center;vertical-align:middle;cursor:default}
+td.today{box-shadow:inset 3px 0 0 var(--accent)}
+h2.sec{font-size:15px;margin:22px 0 8px}
+.alert{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--y);border-radius:8px;padding:8px 10px;margin:8px 0}
+.alert.l2{border-left-color:var(--o)}.alert.l3{border-left-color:var(--r)}
+.alert .h{font-weight:700}.alert .m{color:var(--muted);font-size:12.5px;margin-top:2px}
+.alert .cities{margin-top:4px;font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--muted);margin-top:10px}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+footer{margin-top:18px;color:var(--muted);font-size:12.5px}
+footer a{color:var(--accent)}
+#sheetBack{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20}
+#sheet{position:fixed;z-index:21;background:var(--panel);color:var(--ink);overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.35);
+  left:50%;top:5vh;transform:translateX(-50%);width:min(760px,96vw);max-height:90vh;border-radius:14px;padding:14px 16px 18px}
+#sheet header{padding:0;display:flex;align-items:flex-start;gap:8px}
+#sheet h2{margin:0;font-size:19px}#sheet .sub{color:var(--muted);font-size:13px}
+.nav{margin-left:auto;display:flex;gap:6px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:12px 0}
+.kv{background:var(--head);border-radius:8px;padding:8px 10px}.kv b{display:block;font-size:17px}.kv span{font-size:11.5px;color:var(--muted)}
+.why{margin:8px 0;padding:8px 10px;border-radius:8px;background:var(--f1)}
+.why ul{margin:4px 0 0 18px;padding:0}
+.nowarn{color:var(--muted);margin:8px 0}
+.wcard{border-left:6px solid var(--y);background:var(--head);border-radius:8px;padding:8px 10px;margin:8px 0}
+.wcard.l2{border-left-color:var(--o)}.wcard.l3{border-left-color:var(--r)}
+.wcard p{margin:6px 0 0}
+svg.chart{width:100%;height:auto;margin-top:6px}
+svg .ax{stroke:var(--line)}svg .tx{fill:var(--muted);font-size:10px}
+svg .sel{fill:var(--accent);opacity:.12}
+svg .temp{fill:none;stroke:#e5533d;stroke-width:1.8}svg .wind{fill:none;stroke:var(--accent);stroke-width:1.6}
+svg .bar{fill:#4aa3ff;opacity:.85}svg .thr{stroke:var(--o);stroke-dasharray:4 3}
+@media (max-width:640px){
+  thead th{min-width:92px}td.cell{min-width:92px}
+  #sheet{top:0;left:0;transform:none;width:100vw;max-height:100vh;border-radius:0}
+}
+@media print{
+  .controls,#sheet,#sheetBack{display:none!important}
+  .matrixWrap{max-height:none;overflow:visible}
+  body{background:#fff;color:#000}
+  thead th{position:static}tbody th{position:static}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Norway weather watch</h1>
+  <div id="stamp"></div>
+  <div id="trust"></div>
+  <div id="tdetail" hidden></div>
+  <div id="banner"></div>
+</header>
+<main>
+  <section class="stats" id="stats"></section>
+  <section class="controls">
+    <input id="q" type="search" placeholder="Search city" aria-label="Search city">
+    <div class="chips" id="regions"></div>
+    <select id="sort" aria-label="Sort">
+      <option value="worst">Worst first</option>
+      <option value="region">By region</option>
+      <option value="az">A to Z</option>
+    </select>
+    <select id="metric" aria-label="Numbers in cells">
+      <option value="wr">Wind and rain</option>
+      <option value="t">Temperature</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="only"> Only flagged</label>
+  </section>
+  <div class="matrixWrap"><table id="matrix"></table></div>
+  <div class="legend" id="legend"></div>
+  <h2 class="sec">Official warnings covering these cities</h2>
+  <section id="alerts"></section>
+  <footer id="foot"></footer>
+</main>
+
+<div id="sheetBack" hidden></div>
+<aside id="sheet" role="dialog" aria-modal="true" aria-label="City detail" hidden></aside>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById('data').textContent);
+const LV = ['None','Yellow','Orange','Red'];
+const DOT = ['','🟡','🟠','🔴'];
+const S = {region:'All', q:'', sort:'worst', metric:'wr', only:false, sel:null};
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = v => v==null ? '?' : (Math.round(v*10)/10).toString();
+const fmtT = iso => iso ? new Date(iso).toLocaleString('en-GB',{timeZone:'Europe/Oslo',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+
+function icon(sym){
+  if(!sym) return '';
+  const s = sym.replace(/_(day|night|polartwilight)$/,'');
+  if(s.includes('thunder')) return '⛈️';
+  if(s.includes('snow')) return '❄️';
+  if(s.includes('sleet')) return '🌨️';
+  if(s.includes('showers')) return '🌦️';
+  if(s.includes('rain')) return '🌧️';
+  if(s==='fog') return '🌫️';
+  if(s==='cloudy') return '☁️';
+  if(s==='partlycloudy') return '⛅';
+  if(s==='fair') return '🌤️';
+  if(s==='clearsky') return '☀️';
+  return '';
+}
+
+function worst(c){
+  let r=0, k=0;
+  c.days.forEach(d=>{ r=Math.max(r,d.rank); k=Math.max(k,d.risk); });
+  return [r,k];
+}
+
+function renderHead(){
+  const m = D.meta;
+  $('stamp').textContent = 'Updated ' + m.generated_local + ' (Oslo time). ' + D.cities.length + ' cities, ' + m.horizon_days + ' days.';
+  const out = [];
+  if(m.demo) out.push('<div class="b demo">DEMO MODE: synthetic data to preview the layout. This is not real weather.</div>');
+  (m.notes||[]).filter(n=>!n.startsWith('DEMO')).forEach(n=>out.push('<div class="b warn">'+esc(n)+'</div>'));
+  $('banner').innerHTML = out.join('');
+}
+
+const human = m => { m=Math.max(0,m); return m<90 ? Math.round(m)+' min' : (m/60).toFixed(1)+' h'; };
+const fmtE = ep => ep ? new Date(ep*1000).toLocaleString('en-GB',{timeZone:'Europe/Oslo',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'never';
+function trust(){
+  const m=D.meta, st=m.status, f=st.forecast, w=st.warnings, now=Date.now()/1000, fresh=m.fresh_minutes, stale=m.stale_after_minutes;
+  let level=0; const why=[];
+  const up=(l,t)=>{level=Math.max(level,l); why.push(t);};
+  const ageRule=(ep,label)=>{ const a=(now-ep)/60; if(a>stale) up(2,label+' '+human(a)+' old.'); else if(a>fresh) up(1,label+' '+human(a)+' old.'); };
+  ageRule(m.generated_epoch,'The newest data is');
+  if(f.n_ok===0) up(2,'No forecast data at all.');
+  else{
+    if(f.n_failed) up(1,f.n_failed+' of '+f.n_total+' cities have no forecast.');
+    if(f.n_stale) up(1,f.n_stale+' cities show old cached forecasts because MET could not be reached.');
+    if(f.oldest_fetch) ageRule(f.oldest_fetch,'Oldest forecast data is');
+  }
+  if(w.rss.state==='failed' && w.json.state==='failed') up(2,'No warning data. Seeing no warnings does NOT mean none exist.');
+  else ['rss','json'].forEach(k=>{ const x=w[k];
+    if(x.state==='failed') up(1,'Warnings '+k.toUpperCase()+' feed failed ('+(x.error||'no detail')+').');
+    else { if(x.state==='stale') up(1,'Warnings '+k.toUpperCase()+' feed is from old cache.'); if(x.fetched) ageRule(x.fetched,'Warnings '+k.toUpperCase()+' data is'); }
+  });
+  return {level, why, age:(now-m.generated_epoch)/60};
+}
+function warningsAvailable(){ const w=D.meta.status.warnings; return !(w.rss.state==='failed' && w.json.state==='failed'); }
+let showTrustDetail=false;
+function renderTrust(){
+  const t=trust(), m=D.meta, f=m.status.forecast, w=m.status.warnings, names=['Fresh','Aging','Stale'];
+  const head='<span><span class="dot"></span><b>'+names[t.level]+'</b> · data fetched '+fmtE(m.generated_epoch)+' ('+human(t.age)+' ago)</span>';
+  const msg=t.level===2 ? '<span><b>Do not rely on this page.</b> '+esc(t.why[0])+'</span>' : (t.level===1 ? '<span>'+esc(t.why[0])+'</span>' : '');
+  $('trust').className='trust t'+t.level;
+  $('trust').innerHTML=head+msg+'<a id="tt" role="button" tabindex="0">'+(showTrustDetail?'Hide details':'Details')+'</a>';
+  const row=(a,b)=>'<tr><td>'+a+'</td><td>'+b+'</td></tr>';
+  const wf=k=>{const x=w[k]; return esc(x.state)+(x.fetched?' · fetched '+fmtE(x.fetched):'')+(x.state!=='failed'?' · '+x.items+' items':'')+(x.error?' · '+esc(x.error):'');};
+  $('tdetail').innerHTML='<table>'+
+    row('Engine run',fmtE(m.generated_epoch)+' ('+human(t.age)+' ago)')+
+    row('Forecasts',f.n_ok+' of '+f.n_total+' cities OK'+(f.n_stale?', '+f.n_stale+' from old cache':'')+'; oldest data fetched '+fmtE(f.oldest_fetch)+'; MET model update '+esc((f.met_updated_oldest||'?').slice(0,16).replace('T',' '))+' to '+esc((f.met_updated_newest||'?').slice(0,16).replace('T',' '))+' UTC')+
+    row('Warnings RSS',wf('rss'))+row('Warnings JSON',wf('json'))+
+    row('Problems',t.why.length?t.why.map(esc).join('<br>'):'None')+'</table>'+
+    '<p><b>Fresh</b>: everything fetched within '+m.fresh_minutes+' min and all sources OK. <b>Aging</b>: older than that, or a source is partly failing. <b>Stale</b>: older than '+m.stale_after_minutes+' min or no warning data; do not rely on it. This page cannot update itself, so the age keeps counting up here; if it keeps growing, the engine has stopped.</p>';
+  $('tdetail').hidden=!showTrustDetail;
+  document.querySelector('.matrixWrap').classList.toggle('stale',t.level===2);
+  document.title='Norway weather watch · '+names[t.level]+' · '+human(t.age)+' old';
+  const tt=$('tt'); const flip=()=>{showTrustDetail=!showTrustDetail; renderTrust();};
+  tt.onclick=flip; tt.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault(); flip();} };
+}
+
+function renderStats(){
+  const m = D.meta, hs = [['Today','h1'],['Next 3 days','h3'],['Next '+m.horizon_days+' days','h'+m.horizon_days]];
+  $('stats').innerHTML = hs.map(([t,k])=>{
+    const s = m.stats[k];
+    const p = (cls,n,name)=>'<span class="pill '+(n?cls:'zero')+'">'+n+' '+name+'</span>';
+    const pills = warningsAvailable() ? p('l3',s.red,'red')+p('l2',s.orange,'orange')+p('l1',s.yellow,'yellow')
+                                      : '<span class="pill zero">Warning data unavailable</span>';
+    return '<div class="card"><h3>'+t+': cities with official warnings</h3><div class="pills">'+pills+'</div>'+
+      '<div class="sub">Forecast-only flags (our rule): '+s.risk_high+' high, '+s.risk_elev+' elevated</div></div>';
+  }).join('');
+}
+
+function renderControls(){
+  const regs = ['All'].concat(D.regions);
+  $('regions').innerHTML = regs.map(r=>'<button class="chip" data-r="'+esc(r)+'" aria-pressed="'+(S.region===r)+'">'+esc(r)+'</button>').join('');
+  $('regions').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.region=b.dataset.r; renderControls(); renderMatrix();});
+}
+
+function cellHTML(ci,di){
+  const c = D.cities[ci], d = c.days[di], day = D.days[di];
+  const t = day.today ? ' today' : '';
+  if(c.error) return '<td class="cell na'+t+'" title="'+esc(c.error)+'">n/a</td>';
+  if(d.w==null && !d.al.length) return '<td class="cell na'+t+'" data-ci="'+ci+'" data-di="'+di+'">–</td>';
+  const cls = d.rank ? 'l'+d.rank : (d.risk ? 'f'+d.risk : '');
+  let top = '';
+  if(d.al.length){
+    const names = [...new Set(d.al.map(x=>D.alerts[x[0]].name))];
+    top = DOT[d.rank]+' '+esc(names.slice(0,2).join(', '))+(names.length>2?' +'+(names.length-2):'');
+  } else if(d.risk){
+    top = '⚠ Fcst '+esc(d.why[0].k);
+  } else {
+    top = icon(d.sym);
+  }
+  let nums = '';
+  if(d.w!=null){
+    nums = S.metric==='wr' ? num(d.w)+' m/s · '+num(d.rain)+' mm' : num(d.tmin)+' to '+num(d.tmax)+' °C';
+    if(!day.today && d.cov<18) nums += ' *';
+  }
+  return '<td class="cell '+cls+t+'" data-ci="'+ci+'" data-di="'+di+'"><div class="top">'+top+'</div><div class="nums">'+nums+'</div></td>';
+}
+
+function renderMatrix(){
+  let idx = D.cities.map((c,i)=>i);
+  idx = idx.filter(i=>{
+    const c = D.cities[i];
+    if(S.region!=='All' && c.region!==S.region) return false;
+    if(S.q && !c.name.toLowerCase().includes(S.q.toLowerCase())) return false;
+    if(S.only){ const [r,k]=worst(c); if(!r && !k) return false; }
+    return true;
+  });
+  if(S.sort==='az') idx.sort((a,b)=>D.cities[a].name.localeCompare(D.cities[b].name,'nb'));
+  else if(S.sort==='region') idx.sort((a,b)=>D.cities[a].region.localeCompare(D.cities[b].region,'nb')||a-b);
+  else idx.sort((a,b)=>{ const x=worst(D.cities[a]), y=worst(D.cities[b]); return y[0]-x[0]||y[1]-x[1]||a-b; });
+
+  let h = '<thead><tr><th>City</th>'+D.days.map(d=>'<th class="'+(d.today?'today':'')+'">'+d.wd+'<br>'+d.label.slice(4)+'</th>').join('')+'</tr></thead><tbody>';
+  let lastReg = null;
+  idx.forEach(i=>{
+    const c = D.cities[i];
+    if(S.sort==='region' && c.region!==lastReg){ lastReg=c.region; h+='<tr class="reg"><td colspan="'+(D.days.length+1)+'">'+esc(c.region)+'</td></tr>'; }
+    h += '<tr><th scope="row">'+esc(c.name)+'<small>'+esc(c.region)+(c.stale?' · ⏱ old data':'')+'</small></th>'+c.days.map((_,di)=>cellHTML(i,di)).join('')+'</tr>';
+  });
+  if(!idx.length) h += '<tr><td colspan="'+(D.days.length+1)+'" style="padding:16px;color:var(--muted)">No cities match.</td></tr>';
+  $('matrix').innerHTML = h+'</tbody>';
+  $('matrix').querySelectorAll('td.cell[data-ci]').forEach(td=>td.onclick=()=>openSheet(+td.dataset.ci,+td.dataset.di));
+}
+
+function renderAlerts(){
+  if(!warningsAvailable()){
+    $('alerts').innerHTML='<div class="alert l3"><div class="h">Warning data unavailable</div><div class="m">MET warnings could not be fetched, so none are shown. That does NOT mean none exist. Check <a href="https://www.varsom.no" target="_blank" rel="noopener">varsom.no</a> or <a href="https://www.yr.no" target="_blank" rel="noopener">yr.no</a> directly.</div></div>';
+    return;
+  }
+  const hit = D.alerts.filter(a=>a.cities.length);
+  const other = D.alerts.length - hit.length;
+  let h = hit.map(a=>'<div class="alert l'+a.rank+'"><div class="h">'+DOT[a.rank]+' '+LV[a.rank]+': '+esc(a.name)+'</div>'+
+    '<div class="m">'+esc(a.area)+' · '+(a.time_unknown?'time not stated':fmtT(a.start)+' to '+fmtT(a.end))+'</div>'+
+    '<div class="cities">'+a.cities.map(i=>esc(D.cities[i].name)).join(', ')+'</div></div>').join('');
+  if(!hit.length) h = '<div class="nowarn">No official land warnings cover these cities right now.</div>';
+  if(other>0) h += '<div class="nowarn">'+other+' other land warning'+(other>1?'s':'')+' elsewhere in Norway do not cover any of these cities.</div>';
+  $('alerts').innerHTML = h;
+}
+
+function renderLegend(){
+  const t = D.meta.thresholds;
+  $('legend').innerHTML =
+    '<span><i class="sw" style="background:var(--y)"></i>Yellow / <i class="sw" style="background:var(--o)"></i>orange / <i class="sw" style="background:var(--r)"></i>red = official MET warning</span>'+
+    '<span><i class="sw" style="background:var(--f1)"></i>/<i class="sw" style="background:var(--f2)"></i> Purple = forecast-only flag from our rule, NOT an official warning (wind '+t.wind_elevated+' / '+t.wind_high+' m/s mean, rain '+t.rain_elevated+' / '+t.rain_high+' mm per day, min temp '+t.cold_elevated+' / '+t.cold_high+' °C, thunder)</span>'+
+    '<span>* = partial day of forecast data</span>'+
+    '<span>Wind is mean wind, not gusts. Beyond about 60 hours the forecast is coarser (6-hour steps).</span>'+
+    '<span>Official warnings exist only once MET has issued them; later days show forecast flags only.</span>';
+  $('foot').innerHTML = 'Data: MET Norway (CC BY 4.0). Times are Oslo time. '+
+    '<a href="data.json">data.json</a> · <a href="daily.csv">daily.csv</a> · <a href="alerts.csv">alerts.csv</a> · <a href="digest.txt">digest.txt</a>';
+}
+
+function chart(c, di){
+  const s = c.series; if(!s || !s.t.length) return '';
+  const W=680, padL=34, padR=8, H1=150, H2=90, gap=26;
+  const n = s.t.length, t0 = s.t[0], t1 = s.t[n-1] + (s.hrs[n-1]||1)*3600;
+  const x = t => padL + (t-t0)/(t1-t0)*(W-padL-padR);
+  const temps = s.temp.filter(v=>v!=null), tmin = Math.min(...temps), tmax = Math.max(...temps);
+  const yT = v => 16 + (1-(v-tmin)/((tmax-tmin)||1))*(H1-16-44);
+  const wmax = Math.max(D.meta.thresholds.wind_elevated+2, ...s.wind.filter(v=>v!=null));
+  const yW = v => H1+gap + 6 + (1-v/wmax)*(H2-12);
+  let out = '<svg class="chart" viewBox="0 0 '+W+' '+(H1+gap+H2+8)+'" role="img" aria-label="Temperature, rain and wind over the forecast">';
+  const dd = D.days[di];
+  out += '<rect class="sel" x="'+x(Math.max(dd.start,t0))+'" y="0" width="'+Math.max(0,x(Math.min(dd.end,t1))-x(Math.max(dd.start,t0)))+'" height="'+(H1+gap+H2)+'"/>';
+  D.days.forEach(d=>{
+    if(d.start>=t0 && d.start<=t1) out += '<line class="ax" x1="'+x(d.start)+'" x2="'+x(d.start)+'" y1="0" y2="'+(H1+gap+H2)+'"/>';
+    const a = Math.max(d.start,t0), b = Math.min(d.end,t1);
+    if(b>a) out += '<text class="tx" text-anchor="middle" x="'+x((a+b)/2)+'" y="11">'+d.wd+'</text>';
+  });
+  // rain bars (mm per hour) along the bottom of panel 1
+  const rph = s.rain.map((r,i)=>r/(s.hrs[i]||1)), rmax = Math.max(2, ...rph);
+  for(let i=0;i<n;i++){
+    if(!(rph[i]>0)) continue;
+    const bx = x(s.t[i]), bw = Math.max(1, x(s.t[i]+(s.hrs[i]||1)*3600)-bx-0.5), bh = rph[i]/rmax*40;
+    out += '<rect class="bar" x="'+bx+'" y="'+(H1-bh)+'" width="'+bw+'" height="'+bh+'"><title>'+num(s.rain[i])+' mm</title></rect>';
+  }
+  let pts = [];
+  for(let i=0;i<n;i++) if(s.temp[i]!=null) pts.push(x(s.t[i]).toFixed(1)+','+yT(s.temp[i]).toFixed(1));
+  out += '<polyline class="temp" points="'+pts.join(' ')+'"/>';
+  out += '<text class="tx" x="2" y="'+(yT(tmax)+3)+'">'+num(tmax)+'°</text><text class="tx" x="2" y="'+(yT(tmin)+3)+'">'+num(tmin)+'°</text>';
+  out += '<text class="tx" x="'+padL+'" y="'+(H1+14)+'">temperature (line), rain per hour (bars)</text>';
+  [['wind_elevated'],['wind_high']].forEach(([k])=>{
+    const v = D.meta.thresholds[k]; if(v<wmax) out += '<line class="thr" x1="'+padL+'" x2="'+(W-padR)+'" y1="'+yW(v)+'" y2="'+yW(v)+'"/>';
+  });
+  pts = [];
+  for(let i=0;i<n;i++) if(s.wind[i]!=null) pts.push(x(s.t[i]).toFixed(1)+','+yW(s.wind[i]).toFixed(1));
+  out += '<polyline class="wind" points="'+pts.join(' ')+'"/>';
+  out += '<text class="tx" x="2" y="'+(yW(wmax)+8)+'">'+num(wmax)+'</text><text class="tx" x="2" y="'+(yW(0))+'">0 m/s</text>';
+  out += '<text class="tx" x="'+padL+'" y="'+(H1+gap+16)+'">mean wind (dashed = our flag limits)</text>';
+  return out+'</svg>';
+}
+
+function openSheet(ci,di){
+  S.sel=[ci,di];
+  const c = D.cities[ci], d = c.days[di], day = D.days[di];
+  let h = '<header><div><h2>'+esc(c.name)+'</h2><div class="sub">'+esc(c.region)+' · '+esc(day.label)+(day.today?' (today)':'')+'</div></div>'+
+    '<div class="nav"><button class="btn" id="prev" aria-label="Previous day">‹</button><button class="btn" id="next" aria-label="Next day">›</button><button class="btn" id="close" aria-label="Close">✕</button></div></header>';
+  if(c.error){
+    h += '<p class="nowarn">No forecast for this city: '+esc(c.error)+'</p>';
+  } else {
+    if(d.al.length){
+      h += d.al.map(([ai,when])=>{ const a = D.alerts[ai];
+        return '<div class="wcard l'+a.rank+'"><b>'+DOT[a.rank]+' '+LV[a.rank]+': <span lang="no">'+esc(a.name)+'</span></b> · '+esc(when)+
+          '<div class="sub">'+esc(a.area)+' · '+(a.time_unknown?'time not stated':fmtT(a.start)+' to '+fmtT(a.end))+'</div>'+
+          (a.consequences?'<p lang="no">'+esc(a.consequences)+'</p>':'')+(a.instruction?'<p lang="no"><b>Råd:</b> '+esc(a.instruction)+'</p>':'')+
+          (a.web?'<p><a href="'+esc(a.web)+'" target="_blank" rel="noopener">Source</a></p>':'')+'</div>'; }).join('');
+    } else {
+      h += '<p class="nowarn">No official MET warning for this city on this day'+(D.meta.alerts_total_land===0?' (no land warnings active at all)':'')+'.</p>';
+    }
+    if(d.w!=null){
+      h += '<div class="grid">'+
+        '<div class="kv"><b>'+num(d.w)+' m/s</b><span>max mean wind</span></div>'+
+        '<div class="kv"><b>'+num(d.tmin)+' / '+num(d.tmax)+' °C</b><span>min / max</span></div>'+
+        '<div class="kv"><b>'+num(d.rain)+' mm</b><span>rain in the day</span></div>'+
+        '<div class="kv"><b>'+(icon(d.sym)||'–')+' '+(d.snow?'snow/sleet':'')+(d.thunder?' thunder':'')+'</b><span>midday weather</span></div>'+
+        '<div class="kv"><b>'+num(d.cov)+' h</b><span>forecast hours covered</span></div></div>';
+      h += d.risk ? '<div class="why"><b>Forecast-only flag: '+(d.risk===2?'high':'elevated')+'</b> (our rule on MET forecast numbers, not an official warning)<ul>'+d.why.map(w=>'<li>'+esc(w.txt)+'</li>').join('')+'</ul></div>'
+                  : '<p class="nowarn">No forecast-only flag for this day.</p>';
+    } else {
+      h += '<p class="nowarn">MET forecast data does not reach this day.</p>';
+    }
+    h += chart(c,di);
+    h += '<div class="sub" style="margin-top:6px">Forecast fetched '+fmtE(c.fetched)+(c.stale?' (from old cache, MET unreachable)':'')+'. MET model update: '+esc((c.updated||'unknown').replace('T',' ').slice(0,16))+' UTC. Point used: '+c.lat+', '+c.lon+'.</div>';
+  }
+  const sh = $('sheet'); sh.innerHTML = h; sh.hidden = false; $('sheetBack').hidden = false;
+  $('close').onclick = closeSheet; $('sheetBack').onclick = closeSheet;
+  $('prev').onclick = ()=>openSheet(ci, Math.max(0,di-1)); $('next').onclick = ()=>openSheet(ci, Math.min(D.days.length-1,di+1));
+  $('close').focus();
+}
+function closeSheet(){ $('sheet').hidden = true; $('sheetBack').hidden = true; S.sel=null; }
+document.addEventListener('keydown', e=>{
+  if($('sheet').hidden) return;
+  if(e.key==='Escape') closeSheet();
+  if(e.key==='ArrowLeft'){ const [ci,di]=S.sel; openSheet(ci,Math.max(0,di-1)); }
+  if(e.key==='ArrowRight'){ const [ci,di]=S.sel; openSheet(ci,Math.min(D.days.length-1,di+1)); }
+});
+
+$('q').oninput = e=>{S.q=e.target.value; renderMatrix();};
+$('sort').onchange = e=>{S.sort=e.target.value; renderMatrix();};
+$('metric').onchange = e=>{S.metric=e.target.value; renderMatrix();};
+$('only').onchange = e=>{S.only=e.target.checked; renderMatrix();};
+
+renderHead(); renderTrust(); renderStats(); renderControls(); renderMatrix(); renderAlerts(); renderLegend();
+setInterval(renderTrust, 30000);
+</script>
+</body>
+</html>

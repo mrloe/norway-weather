@@ -1,0 +1,13 @@
+{
+  "user_agent": "NorwayWeatherWatch/1.0 CHANGE_ME@example.com",
+  "days": 10,
+  "include_marine": false,
+  "thresholds": {
+    "wind_elevated": 13.9,
+    "wind_high": 20.8,
+    "rain_elevated": 25,
+    "rain_high": 50,
+    "cold_elevated": -15,
+    "cold_high": -25
+  }
+}

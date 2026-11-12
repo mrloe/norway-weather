@@ -1,0 +1,284 @@
+[
+ {
+  "name": "Oslo",
+  "region": "Østlandet",
+  "lat": 59.9139,
+  "lon": 10.7522
+ },
+ {
+  "name": "Bergen",
+  "region": "Vestlandet",
+  "lat": 60.3913,
+  "lon": 5.3221
+ },
+ {
+  "name": "Stavanger",
+  "region": "Vestlandet",
+  "lat": 58.97,
+  "lon": 5.7331
+ },
+ {
+  "name": "Trondheim",
+  "region": "Trøndelag",
+  "lat": 63.4305,
+  "lon": 10.3951
+ },
+ {
+  "name": "Lillestrøm",
+  "region": "Østlandet",
+  "lat": 59.956,
+  "lon": 11.0492
+ },
+ {
+  "name": "Bærum",
+  "region": "Østlandet",
+  "lat": 59.8913,
+  "lon": 10.5256
+ },
+ {
+  "name": "Drammen",
+  "region": "Østlandet",
+  "lat": 59.744,
+  "lon": 10.2045
+ },
+ {
+  "name": "Tromsø",
+  "region": "Nord-Norge",
+  "lat": 69.6492,
+  "lon": 18.9553
+ },
+ {
+  "name": "Kristiansand",
+  "region": "Sørlandet",
+  "lat": 58.1467,
+  "lon": 7.9956
+ },
+ {
+  "name": "Sandnes",
+  "region": "Vestlandet",
+  "lat": 58.8517,
+  "lon": 5.7352
+ },
+ {
+  "name": "Fredrikstad",
+  "region": "Østlandet",
+  "lat": 59.2181,
+  "lon": 10.9298
+ },
+ {
+  "name": "Skien",
+  "region": "Østlandet",
+  "lat": 59.2096,
+  "lon": 9.609
+ },
+ {
+  "name": "Porsgrunn",
+  "region": "Østlandet",
+  "lat": 59.1405,
+  "lon": 9.6561
+ },
+ {
+  "name": "Ski",
+  "region": "Østlandet",
+  "lat": 59.7194,
+  "lon": 10.8358
+ },
+ {
+  "name": "Jessheim",
+  "region": "Østlandet",
+  "lat": 60.1415,
+  "lon": 11.1747
+ },
+ {
+  "name": "Bodø",
+  "region": "Nord-Norge",
+  "lat": 67.2804,
+  "lon": 14.4049
+ },
+ {
+  "name": "Heimdal",
+  "region": "Trøndelag",
+  "lat": 63.35,
+  "lon": 10.355
+ },
+ {
+  "name": "Moss",
+  "region": "Østlandet",
+  "lat": 59.434,
+  "lon": 10.6578
+ },
+ {
+  "name": "Sandefjord",
+  "region": "Østlandet",
+  "lat": 59.1312,
+  "lon": 10.2167
+ },
+ {
+  "name": "Haugesund",
+  "region": "Vestlandet",
+  "lat": 59.4138,
+  "lon": 5.268
+ },
+ {
+  "name": "Nesttun",
+  "region": "Vestlandet",
+  "lat": 60.327,
+  "lon": 5.3529
+ },
+ {
+  "name": "Tønsberg",
+  "region": "Østlandet",
+  "lat": 59.2676,
+  "lon": 10.4076
+ },
+ {
+  "name": "Ålesund",
+  "region": "Vestlandet",
+  "lat": 62.4722,
+  "lon": 6.1549
+ },
+ {
+  "name": "Harstad",
+  "region": "Nord-Norge",
+  "lat": 68.7986,
+  "lon": 16.5413
+ },
+ {
+  "name": "Horten",
+  "region": "Østlandet",
+  "lat": 59.4172,
+  "lon": 10.4834
+ },
+ {
+  "name": "Hamar",
+  "region": "Østlandet",
+  "lat": 60.7945,
+  "lon": 11.068
+ },
+ {
+  "name": "Stord",
+  "region": "Vestlandet",
+  "lat": 59.779,
+  "lon": 5.5
+ },
+ {
+  "name": "Hønefoss",
+  "region": "Østlandet",
+  "lat": 60.168,
+  "lon": 10.256
+ },
+ {
+  "name": "Alta",
+  "region": "Nord-Norge",
+  "lat": 69.9689,
+  "lon": 23.2716
+ },
+ {
+  "name": "Kongsberg",
+  "region": "Østlandet",
+  "lat": 59.6689,
+  "lon": 9.6502
+ },
+ {
+  "name": "Gjøvik",
+  "region": "Østlandet",
+  "lat": 60.7957,
+  "lon": 10.6915
+ },
+ {
+  "name": "Larvik",
+  "region": "Østlandet",
+  "lat": 59.0533,
+  "lon": 10.0273
+ },
+ {
+  "name": "Lillehammer",
+  "region": "Østlandet",
+  "lat": 61.1153,
+  "lon": 10.4662
+ },
+ {
+  "name": "Klepp",
+  "region": "Vestlandet",
+  "lat": 58.7787,
+  "lon": 5.6277
+ },
+ {
+  "name": "Kristiansund",
+  "region": "Vestlandet",
+  "lat": 63.1115,
+  "lon": 7.728
+ },
+ {
+  "name": "Elverum",
+  "region": "Østlandet",
+  "lat": 60.882,
+  "lon": 11.5623
+ },
+ {
+  "name": "Molde",
+  "region": "Vestlandet",
+  "lat": 62.7375,
+  "lon": 7.1591
+ },
+ {
+  "name": "Halden",
+  "region": "Østlandet",
+  "lat": 59.1229,
+  "lon": 11.3875
+ },
+ {
+  "name": "Arendal",
+  "region": "Sørlandet",
+  "lat": 58.4618,
+  "lon": 8.7722
+ },
+ {
+  "name": "Stjørdal",
+  "region": "Trøndelag",
+  "lat": 63.469,
+  "lon": 10.925
+ },
+ {
+  "name": "Levanger",
+  "region": "Trøndelag",
+  "lat": 63.746,
+  "lon": 11.299
+ },
+ {
+  "name": "Askøy",
+  "region": "Vestlandet",
+  "lat": 60.4,
+  "lon": 5.22
+ },
+ {
+  "name": "Mo i Rana",
+  "region": "Nord-Norge",
+  "lat": 66.3128,
+  "lon": 14.1428
+ },
+ {
+  "name": "Grimstad",
+  "region": "Sørlandet",
+  "lat": 58.3405,
+  "lon": 8.5934
+ },
+ {
+  "name": "Steinkjer",
+  "region": "Trøndelag",
+  "lat": 64.0149,
+  "lon": 11.4954
+ },
+ {
+  "name": "Lillesotra",
+  "region": "Vestlandet",
+  "lat": 60.36,
+  "lon": 5.13
+ },
+ {
+  "name": "Orkanger",
+  "region": "Trøndelag",
+  "lat": 63.3,
+  "lon": 9.85
+ }
+]

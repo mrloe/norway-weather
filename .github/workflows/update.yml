@@ -1,0 +1,59 @@
+name: update-weather
+
+# Rebuilds the dashboard twice an hour and publishes it with GitHub Pages.
+# One-time setup, in the repo on github.com:
+#   1. Settings > Pages > Source: "GitHub Actions"
+#   2. Settings > Secrets and variables > Actions > New secret
+#        WEATHER_USER_AGENT = NorwayWeatherWatch/1.0 your.email@example.com   (required by MET)
+#        SLACK_WEBHOOK_URL  = optional, posts new orange/red warnings
+# Note: a Pages site is public to anyone with the link (unless your GitHub plan offers private Pages).
+# The page only contains public MET weather data and your list of city names.
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restore MET response cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: met-cache-${{ github.run_id }}
+          restore-keys: met-cache-
+      - name: Run tests
+        run: python -m unittest discover -s tests
+      - name: Build site
+        run: python engine.py --out site
+        env:
+          WEATHER_USER_AGENT: ${{ secrets.WEATHER_USER_AGENT }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
