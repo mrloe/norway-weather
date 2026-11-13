@@ -93,6 +93,20 @@ footer a{color:var(--accent)}
 .wcard{border-left:6px solid var(--y);background:var(--head);border-radius:8px;padding:8px 10px;margin:8px 0}
 .wcard.l2{border-left-color:var(--o)}.wcard.l3{border-left-color:var(--r)}
 .wcard p{margin:6px 0 0}
+
+.dh{margin:12px 0 4px;font-size:15px}
+.dsum{margin:6px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:14px;line-height:1.5}
+.dsum b{white-space:nowrap}
+.hrs{margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+.hr{display:grid;grid-template-columns:78px 28px 52px minmax(90px,1fr) 62px;gap:6px;align-items:center;padding:4px 10px;border-top:1px solid var(--line)}
+.hr:first-child{border-top:0}
+.hr.hd{background:var(--bg);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+.hr .rb{display:flex;align-items:center;gap:6px}
+.hr .rb i{display:block;height:9px;border-radius:3px;background:#4aa3ff;min-width:0}
+.hr .rb span{white-space:nowrap}
+.hr.wet{background:rgba(74,163,255,.10)}
+.hr.gap{color:var(--muted);justify-content:center}
+.hr .wnd.hi{color:var(--o);font-weight:600}
 svg.chart{width:100%;height:auto;margin-top:6px}
 svg .ax{stroke:var(--line)}svg .tx{fill:var(--muted);font-size:10px}
 svg .sel{fill:var(--accent);opacity:.12}
@@ -365,6 +379,105 @@ function chart(c, di){
   return out+'</svg>';
 }
 
+
+const fmtH = ep => new Date(ep*1000).toLocaleTimeString('en-GB',{timeZone:'Europe/Oslo',hour:'2-digit',minute:'2-digit'});
+
+function daySteps(c, di){
+  const s = c.series, day = D.days[di], out = [];
+  if(!s) return out;
+  for(let i=0;i<s.t.length;i++){
+    if(s.t[i] >= day.start && s.t[i] < day.end)
+      out.push({i, t:s.t[i], h:s.hrs[i]||1, temp:s.temp[i], wind:s.wind[i], rain:s.rain[i]||0, sym:(s.sym||[])[i]});
+  }
+  return out;
+}
+
+function daySummary(st){
+  if(!st.length) return '';
+  const th = D.meta.thresholds, coarse = st.some(x=>x.h>1.5);
+  const total = st.reduce((a,x)=>a+x.rain,0);
+  let parts = [];
+  if(total < 0.2){
+    parts.push('<b>Dry day.</b> Essentially no rain in the forecast.');
+  } else {
+    // shortest stretch that holds at least 70% of the day's rain
+    let best=null, j=0, acc=0;
+    for(let a=0;a<st.length;a++){
+      if(a>0) acc -= st[a-1].rain;
+      while(j<st.length && acc < 0.7*total){ acc += st[j].rain; j++; }
+      if(acc >= 0.7*total){
+        const dur = st[j-1].t+st[j-1].h*3600 - st[a].t;
+        if(!best || dur < best.dur) best = {a, b:j-1, dur, mm:acc};
+      }
+    }
+    if(best){
+      const from = fmtH(st[best.a].t), to = fmtH(st[best.b].t+st[best.b].h*3600);
+      parts.push('<b>Rain: '+num(total)+' mm in the day.</b> Most of it ('+num(best.mm)+' mm) falls between <b>'+from+' and '+to+'</b>.');
+    } else parts.push('<b>Rain: '+num(total)+' mm in the day.</b>');
+    let pk = st.reduce((m,x)=> (x.rain/x.h > m.rain/m.h) ? x : m, st[0]);
+    parts.push('Heaviest '+(pk.h>1.5?pk.h+'-hour block':'hour')+': '+num(pk.rain)+' mm at <b>'+fmtH(pk.t)+'</b>'+(pk.h>1.5?' ('+num(pk.rain/pk.h)+' mm/h average)':'')+'.');
+  }
+  const ws = st.filter(x=>x.wind!=null);
+  if(ws.length){
+    const wk = ws.reduce((m,x)=>x.wind>m.wind?x:m, ws[0]);
+    parts.push('Windiest: <b>'+num(wk.wind)+' m/s</b> around '+fmtH(wk.t)+(wk.wind>=th.wind_elevated?' (above our flag limit)':'')+'.');
+  }
+  const ts = st.filter(x=>x.temp!=null);
+  if(ts.length){
+    const cold = ts.reduce((m,x)=>x.temp<m.temp?x:m, ts[0]), warm = ts.reduce((m,x)=>x.temp>m.temp?x:m, ts[0]);
+    parts.push('Coldest '+num(cold.temp)+' °C at '+fmtH(cold.t)+', warmest '+num(warm.temp)+' °C at '+fmtH(warm.t)+'.');
+  }
+  if(coarse) parts.push('<span class="sub">This far ahead MET gives 6-hour blocks, so exact hours are not available yet. Check again closer to the day.</span>');
+  return '<div class="dsum">'+parts.join('<br>')+'</div>';
+}
+
+function dayChart(c, di){
+  const st = daySteps(c, di); if(!st.length) return '';
+  const day = D.days[di], W=680, padL=34, padR=8, H1=130, H2=70, gap=22, tot=H1+gap+H2;
+  const t0 = Math.max(day.start, st[0].t), t1 = Math.min(day.end, st[st.length-1].t+st[st.length-1].h*3600);
+  const x = t => padL + (t-t0)/(t1-t0)*(W-padL-padR);
+  const temps = st.map(v=>v.temp).filter(v=>v!=null), tmin = Math.min(...temps), tmax = Math.max(...temps);
+  const yT = v => 14 + (1-(v-tmin)/((tmax-tmin)||1))*(H1-14-46);
+  const wmax = Math.max(D.meta.thresholds.wind_elevated+1, ...st.map(v=>v.wind||0));
+  const yW = v => H1+gap+4 + (1-v/wmax)*(H2-8);
+  const rph = st.map(v=>v.rain/v.h), rmax = Math.max(1, ...rph);
+  let o = '<svg class="chart" viewBox="0 0 '+W+' '+(tot+16)+'" role="img" aria-label="Hour by hour temperature, rain and wind">';
+  const stepH = st.some(v=>v.h>1.5) ? 6 : 3;
+  for(let t=Math.ceil(t0/(stepH*3600))*stepH*3600; t<=t1; t+=stepH*3600){
+    o += '<line class="ax" x1="'+x(t)+'" x2="'+x(t)+'" y1="0" y2="'+tot+'"/><text class="tx" text-anchor="middle" x="'+x(t)+'" y="'+(tot+12)+'">'+fmtH(t)+'</text>';
+  }
+  st.forEach((v,k)=>{
+    if(!(v.rain>0)) return;
+    const bx = x(v.t)+0.5, bw = Math.max(1, x(v.t+v.h*3600)-x(v.t)-1), bh = Math.max(1.5, rph[k]/rmax*46);
+    o += '<rect class="bar" x="'+bx+'" y="'+(H1-bh)+'" width="'+bw+'" height="'+bh+'"><title>'+fmtH(v.t)+': '+num(v.rain)+' mm</title></rect>';
+    if(v.rain >= 0.3 && bw >= 14) o += '<text class="tx" text-anchor="middle" x="'+(bx+bw/2)+'" y="'+(H1-bh-3)+'">'+num(v.rain)+'</text>';
+  });
+  let pts = st.filter(v=>v.temp!=null).map(v=>x(v.t+v.h*1800).toFixed(1)+','+yT(v.temp).toFixed(1));
+  o += '<polyline class="temp" points="'+pts.join(' ')+'"/>';
+  o += '<text class="tx" x="2" y="'+(yT(tmax)+3)+'">'+num(tmax)+'°</text><text class="tx" x="2" y="'+(yT(tmin)+3)+'">'+num(tmin)+'°</text>';
+  o += '<text class="tx" x="'+padL+'" y="'+(H1+14)+'">temperature (line), rain mm per step (bars)</text>';
+  [D.meta.thresholds.wind_elevated, D.meta.thresholds.wind_high].forEach(v=>{ if(v<wmax) o += '<line class="thr" x1="'+padL+'" x2="'+(W-padR)+'" y1="'+yW(v)+'" y2="'+yW(v)+'"/>'; });
+  pts = st.filter(v=>v.wind!=null).map(v=>x(v.t+v.h*1800).toFixed(1)+','+yW(v.wind).toFixed(1));
+  o += '<polyline class="wind" points="'+pts.join(' ')+'"/>';
+  o += '<text class="tx" x="2" y="'+(yW(wmax)+8)+'">'+num(wmax)+'</text><text class="tx" x="2" y="'+yW(0)+'">0 m/s</text>';
+  o += '<text class="tx" x="'+padL+'" y="'+(H1+gap+12)+'">mean wind (dashed = flag limits)</text>';
+  return o+'</svg>';
+}
+
+function hourTable(c, di){
+  const st = daySteps(c, di); if(!st.length) return '';
+  const th = D.meta.thresholds, rmax = Math.max(1, ...st.map(v=>v.rain/v.h));
+  let h = '<div class="hrs"><div class="hr hd"><span>Time</span><span></span><span>Temp</span><span>Rain</span><span>Wind</span></div>';
+  st.forEach(v=>{
+    const mm = v.rain, w = Math.round(mm/v.h/rmax*100);
+    h += '<div class="hr'+(mm/v.h>=0.5?' wet':'')+'"><span>'+fmtH(v.t)+(v.h>1.5?'-'+fmtH(v.t+v.h*3600):'')+'</span>'+
+      '<span>'+(icon(v.sym)||'')+'</span><span>'+(v.temp!=null?num(v.temp)+' °C':'–')+'</span>'+
+      '<span class="rb">'+(mm>0?'<i style="width:'+Math.max(4,w*0.6)+'%"></i><span>'+num(mm)+' mm</span>':'<span style="color:var(--muted)">dry</span>')+'</span>'+
+      '<span class="wnd'+(v.wind!=null&&v.wind>=th.wind_elevated?' hi':'')+'">'+(v.wind!=null?num(v.wind)+' m/s':'–')+'</span></div>';
+  });
+  return h+'</div>';
+}
+
 function openSheet(ci,di){
   S.sel=[ci,di];
   const c = D.cities[ci], d = c.days[di], day = D.days[di];
@@ -394,7 +507,11 @@ function openSheet(ci,di){
     } else {
       h += '<p class="nowarn">MET forecast data does not reach this day.</p>';
     }
-    h += chart(c,di);
+    const st = daySteps(c,di);
+    if(st.length){
+      h += '<h3 class="dh">Hour by hour, '+esc(day.label)+'</h3>' + daySummary(st) + dayChart(c,di) + hourTable(c,di);
+    }
+    h += '<h3 class="dh">All days at a glance</h3>' + chart(c,di);
     h += '<div class="sub" style="margin-top:6px">Forecast fetched '+fmtE(c.fetched)+(c.stale?' (from old cache, MET unreachable)':'')+'. MET model update: '+esc((c.updated||'unknown').replace('T',' ').slice(0,16))+' UTC. Point used: '+c.lat+', '+c.lon+'.</div>';
   }
   const sh = $('sheet'); sh.innerHTML = h; sh.hidden = false; $('sheetBack').hidden = false;

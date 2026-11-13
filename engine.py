@@ -262,7 +262,7 @@ def summarize_forecast(fc, now):
             break
 
     days = {}
-    series = {"t": [], "temp": [], "wind": [], "rain": [], "hrs": []}
+    series = {"t": [], "temp": [], "wind": [], "rain": [], "hrs": [], "sym": []}
     for i in range(idx, len(ts)):
         t = times[i]
         gap = (times[i + 1] - t).total_seconds() / 3600 if i + 1 < len(ts) else None
@@ -317,6 +317,7 @@ def summarize_forecast(fc, now):
         series["wind"].append(w)
         series["rain"].append(round(rain_step, 2))
         series["hrs"].append(hrs or (gap or 1))
+        series["sym"].append(sym)
 
     for d in days.values():
         d.pop("_nd", None)
