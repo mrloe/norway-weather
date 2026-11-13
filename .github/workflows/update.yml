@@ -11,7 +11,11 @@ name: update-weather
 
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    # GitHub drops or delays scheduled runs under load, so ask often.
+    # Extra runs are cheap: the engine reuses its cache and respects MET's Expires.
+    - cron: "3,13,23,33,43,53 * * * *"
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
