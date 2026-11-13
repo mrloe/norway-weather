@@ -280,5 +280,11 @@
   "region": "Trøndelag",
   "lat": 63.3,
   "lon": 9.85
+ },
+ {
+  "name": "Søgne",
+  "region": "Sørlandet",
+  "lat": 58.09,
+  "lon": 7.8
  }
 ]

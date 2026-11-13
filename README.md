@@ -1,6 +1,6 @@
 # Norway weather watch
 
-Forecast and official warnings for 47 Norwegian cities, 10 days ahead, from MET Norway (the data behind Yr).
+Forecast and official warnings for 48 Norwegian cities, 10 days ahead, from MET Norway (the data behind Yr).
 Standard library only, Python 3.9+. Edit `cities.json` to change the city list.
 
 ## Run it (Windows, from this folder)

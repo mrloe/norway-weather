@@ -188,7 +188,7 @@ class EndToEndTests(unittest.TestCase):
     def test_demo_model(self):
         now = datetime(2026, 11, 12, 14, 0, tzinfo=UTC)
         cities = engine.load_cities()
-        self.assertEqual(len(cities), 47)
+        self.assertEqual(len(cities), 48)
         fcs = [engine.summarize_forecast(demo_data.fake_forecast(c, now), now) for c in cities]
         rss, js = demo_data.fake_alert_feeds(now)
         alerts = engine.build_alerts(engine.parse_rss(rss), engine.parse_json_alerts(js), CFG, now)
@@ -225,7 +225,7 @@ class EndToEndTests(unittest.TestCase):
             blob = html.split('type="application/json">')[1].split("</script>")[0]
             self.assertEqual(json.loads(blob.replace("<\\/", "</"))["meta"]["horizon_days"], 10)
             rows = open(os.path.join(tmp, "daily.csv"), encoding="utf-8-sig").read().strip().split("\n")
-            self.assertEqual(len(rows), 1 + 47 * 10)
+            self.assertEqual(len(rows), 1 + 48 * 10)
 
 
 class TrustTests(unittest.TestCase):
